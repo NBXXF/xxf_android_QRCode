@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Size;
 
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -12,17 +14,10 @@ import java.util.Objects;
  * @author youxuan  E-mail:xuanyouwu@163.com
  * @Description
  */
-public class QRCode {
+public class QRCodeProviders {
 
-    Builder builder;
-
-    public Bitmap getResult() {
-        //QRCodeUtil.createQRCodeBitmap(builder.content,builder.outputSize,builder.charSet.name(),)
-        return null;
-    }
-
-    private QRCode(Builder builder) {
-        this.builder = builder;
+    public static Builder of(String content) {
+        return new Builder(content);
     }
 
     public static class Builder {
@@ -50,7 +45,7 @@ public class QRCode {
         /**
          * 二维码内边距
          */
-        int padding = outputSize.getWidth() / 10;
+        int contentMargin = 1;
         /**
          * 二维码背景色
          */
@@ -66,11 +61,16 @@ public class QRCode {
          */
         float logoPercent = 0.2F;
 
-        public Builder(String content) {
+        /**
+         * 容错率 L：7% M：15% Q：25% H：35%
+         */
+        ErrorCorrectionLevel errorCorrectionLevel = ErrorCorrectionLevel.M;
+
+        Builder(String content) {
             this.content = Objects.requireNonNull(content);
         }
 
-        public Builder setCharSet(Charset charSet) {
+        Builder setCharSet(Charset charSet) {
             this.charSet = Objects.requireNonNull(charSet);
             return this;
         }
@@ -85,8 +85,8 @@ public class QRCode {
             return this;
         }
 
-        public Builder setPadding(int padding) {
-            this.padding = padding;
+        public Builder setContentMargin(int contentMargin) {
+            this.contentMargin = contentMargin;
             return this;
         }
 
@@ -110,8 +110,13 @@ public class QRCode {
             return this;
         }
 
-        public QRCode build() {
-            return new QRCode(this);
+        public Builder setErrorCorrectionLevel(ErrorCorrectionLevel errorCorrectionLevel) {
+            this.errorCorrectionLevel = Objects.requireNonNull(errorCorrectionLevel);
+            return this;
+        }
+
+        public Bitmap build() {
+            return QRCodeUtil.createQRCodeBitmap(content, outputSize, charSet, errorCorrectionLevel, contentMargin, contentColor, backgroundColor, logo, logoPercent, contentFillImg);
         }
     }
 }

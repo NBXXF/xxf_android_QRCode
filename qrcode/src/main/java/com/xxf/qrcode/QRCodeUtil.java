@@ -10,7 +10,9 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import java.nio.charset.Charset;
 import java.util.Hashtable;
 
 /**
@@ -26,15 +28,15 @@ class QRCodeUtil {
      * @param character_set          编码方式（一般使用UTF-8）
      * @param error_correction_level 容错率 L：7% M：15% Q：25% H：35%
      * @param margin                 空白边距（二维码与边框的空白区域）
-     * @param color_black            黑色色块
-     * @param color_white            白色色块
+     * @param contentColor           内容色块
+     * @param backgroundColor        背景色块
      * @param logoBitmap             logo图片（传null时不添加logo）
      * @param logoPercent            logo所占百分比
-     * @param bitmap_black           用来代替黑色色块的图片（传null时不代替）
+     * @param contentReplaceBitmp    用来代替黑色色块的图片（传null时不代替）
      * @return
      */
-    public static Bitmap createQRCodeBitmap(String content, Size outputSizePx, String character_set, String error_correction_level,
-                                            String margin, int color_black, int color_white, Bitmap logoBitmap, float logoPercent, Bitmap bitmap_black) {
+    public static Bitmap createQRCodeBitmap(String content, Size outputSizePx, Charset character_set, ErrorCorrectionLevel error_correction_level,
+                                            int margin, int contentColor, int backgroundColor, Bitmap logoBitmap, float logoPercent, Bitmap contentReplaceBitmp) {
         // 字符串内容判空
         if (TextUtils.isEmpty(content)) {
             return null;
@@ -47,39 +49,33 @@ class QRCodeUtil {
         }
         try {
             /** 1.设置二维码相关配置,生成BitMatrix(位矩阵)对象 */
-            Hashtable<EncodeHintType, String> hints = new Hashtable<>();
+            Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
             // 字符转码格式设置
-            if (!TextUtils.isEmpty(character_set)) {
-                hints.put(EncodeHintType.CHARACTER_SET, character_set);
-            }
+            hints.put(EncodeHintType.CHARACTER_SET, character_set.name());
             // 容错率设置
-            if (!TextUtils.isEmpty(error_correction_level)) {
-                hints.put(EncodeHintType.ERROR_CORRECTION, error_correction_level);
-            }
+            hints.put(EncodeHintType.ERROR_CORRECTION, error_correction_level);
             // 空白边距设置
-            if (!TextUtils.isEmpty(margin)) {
-                hints.put(EncodeHintType.MARGIN, margin);
-            }
+            hints.put(EncodeHintType.MARGIN, margin);
             /** 2.将配置参数传入到QRCodeWriter的encode方法生成BitMatrix(位矩阵)对象 */
             BitMatrix bitMatrix = new QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, outputWidth, outputHeight, hints);
 
             /** 3.创建像素数组,并根据BitMatrix(位矩阵)对象为数组元素赋颜色值 */
-            if (bitmap_black != null) {
+            if (contentReplaceBitmp != null) {
                 //从当前位图按一定的比例创建一个新的位图
-                bitmap_black = Bitmap.createScaledBitmap(bitmap_black, outputWidth, outputHeight, false);
+                contentReplaceBitmp = Bitmap.createScaledBitmap(contentReplaceBitmp, outputWidth, outputHeight, false);
             }
             int[] pixels = new int[outputWidth * outputHeight];
             for (int y = 0; y < outputHeight; y++) {
                 for (int x = 0; x < outputWidth; x++) {
                     //bitMatrix.get(x,y)方法返回true是黑色色块，false是白色色块
                     if (bitMatrix.get(x, y)) {// 黑色色块像素设置
-                        if (bitmap_black != null) {//图片不为null，则将黑色色块换为新位图的像素。
-                            pixels[y * outputWidth + x] = bitmap_black.getPixel(x, y);
+                        if (contentReplaceBitmp != null) {//图片不为null，则将黑色色块换为新位图的像素。
+                            pixels[y * outputWidth + x] = contentReplaceBitmp.getPixel(x, y);
                         } else {
-                            pixels[y * outputWidth + x] = color_black;
+                            pixels[y * outputWidth + x] = contentColor;
                         }
                     } else {
-                        pixels[y * outputWidth + x] = color_white;// 白色色块像素设置
+                        pixels[y * outputWidth + x] = backgroundColor;// 白色色块像素设置
                     }
                 }
             }

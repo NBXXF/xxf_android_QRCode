@@ -1,2 +1,2 @@
-include ':app', ':qrcode',':demo'
+include ':qrcode',':demo'
 rootProject.name='xxf_android_QRCode'

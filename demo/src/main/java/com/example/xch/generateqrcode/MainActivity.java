@@ -2,6 +2,8 @@ package com.example.xch.generateqrcode;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,15 +14,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -29,11 +30,12 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.xxf.qrcode.QRCodeProviders;
 
 import java.io.File;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener {
     private Button btn_generate;
     private EditText et_content;
     private ImageView iv_qrcode;
@@ -191,11 +193,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 保存图片至本地
+     *
      * @param bitmap
      */
-    private void saveImg(Bitmap bitmap){
-        String fileName = "qr_"+System.currentTimeMillis() + ".jpg";
-        boolean isSaveSuccess = ImageUtil.saveImageToGallery(MainActivity.this, bitmap,fileName);
+    private void saveImg(Bitmap bitmap) {
+        String fileName = "qr_" + System.currentTimeMillis() + ".jpg";
+        boolean isSaveSuccess = ImageUtil.saveImageToGallery(MainActivity.this, bitmap, fileName);
         if (isSaveSuccess) {
             Toast.makeText(MainActivity.this, "图片已保存至本地", Toast.LENGTH_LONG).show();
         } else {
@@ -205,10 +208,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 分享图片(直接将bitamp转换为Uri)
+     *
      * @param bitmap
      */
-    private void shareImg(Bitmap bitmap){
-        Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, null,null));
+    private void shareImg(Bitmap bitmap) {
+        Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, null, null));
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("image/*");//设置分享内容的类型
@@ -236,8 +240,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "你没有输入二维码内容哟！", Toast.LENGTH_SHORT).show();
             return;
         }
-        qrcode_bitmap = QRCodeUtil.createQRCodeBitmap(content, width, height, "UTF-8",
-                error_correction_level, margin, color_black, color_white, logoBitmap, 0.2F, blackBitmap);
+        qrcode_bitmap = QRCodeProviders.of(content)
+                .setOutputSize(new Size(width, height))
+                .setContentMargin(Integer.valueOf(margin))
+                .setContentColor(color_black)
+                .setBackgroundColor(color_white)
+                .setLogo(logoBitmap)
+                .setContentFillImg(blackBitmap)
+                .build();
         iv_qrcode.setImageBitmap(qrcode_bitmap);
     }
 
@@ -269,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
@@ -281,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 长按二维码图片弹出选择框（保存或分享）
      */
-    private void imgChooseDialog(){
+    private void imgChooseDialog() {
         AlertDialog.Builder choiceBuilder = new AlertDialog.Builder(MainActivity.this);
         choiceBuilder.setCancelable(false);
         choiceBuilder
@@ -304,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
