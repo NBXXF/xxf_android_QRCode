@@ -1,0 +1,22 @@
+ext {
+
+    android = [
+            compileSdkVersion: 28,//不要轻易改
+            buildToolsVersion: "28.0.0",
+            minSdkVersion    : 21,// 最低5.0==21
+            targetSdkVersion : 26, //不要轻易改
+            versionCode      : 3000,
+            versionName      : "3.0.0"//切记不能包括v或者尾巴(由于app更新)
+    ]
+
+    dependVersion = [
+            support: "28.0.0"
+    ]
+
+    dependencies = [
+            xxf_android               : "com.github.NBXXF:xxf_android:2.6.3",
+            tks_android_web3j: "com.github.TokenTM.tks_android_web3j:abi:1.0.2",
+
+    ]
+
+}
