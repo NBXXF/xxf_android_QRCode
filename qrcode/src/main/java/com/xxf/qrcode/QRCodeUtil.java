@@ -19,7 +19,7 @@ import java.util.Hashtable;
  * @author youxuan  E-mail:xuanyouwu@163.com
  * @Description
  */
-class QRCodeUtil {
+public class QRCodeUtil {
     /**
      * 生成自定义二维码
      *
