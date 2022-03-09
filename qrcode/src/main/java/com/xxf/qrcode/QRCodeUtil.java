@@ -6,14 +6,21 @@ import android.text.TextUtils;
 import android.util.Size;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.nio.charset.Charset;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author youxuan  E-mail:xuanyouwu@163.com
@@ -134,6 +141,31 @@ public class QRCodeUtil {
         canvas.drawBitmap(logoBitmap, srcWidth / 2 - logoWidth / 2, srcHeight / 2 - logoHeight / 2, null);
 
         return bitmap;
+    }
+
+
+    /**
+     * 识别图片中的二维码
+     *
+     * @param input
+     * @param hints Map<DecodeHintType, Object> hints = new HashMap<>();
+     *              hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
+     * @return
+     */
+    public static Result decode(Bitmap input, Map<DecodeHintType, ?> hints) {
+        try {
+            int width = input.getWidth();
+            int height = input.getHeight();
+            int[] data = new int[width * height];
+            input.getPixels(data, 0, width, 0, 0, width, height);
+            RGBLuminanceSource source = new RGBLuminanceSource(width, height, data);
+            BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
+            QRCodeReader reader = new QRCodeReader();
+            return reader.decode(bitmap1, hints);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
